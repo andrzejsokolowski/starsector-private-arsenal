@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+}
+
+// Sources live under src/ (not the Gradle default src/main/java).
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = []
+        }
+    }
+}
+
+dependencies {
+    // Starsector API, its bundled libs, and LunaLib are all provided at runtime by
+    // the game/other mods, so they are compile-only. Vendored in lib/ alongside the
+    // other Starsector jars (also referenced by pom.xml).
+    compileOnly fileTree(dir: 'lib', include: ['*.jar'])
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // Starsector 0.98a runs a Java 17 JRE; target Java 8 bytecode for broad
+    // compatibility (loads on the JRE8 patch as well as JRE17).
+    options.release = 8
+}
+
+jar {
+    archiveFileName = 'PrivateArsenal.jar'
+    destinationDirectory = file('jars')
+    manifest {
+        attributes('Main-Class': 'privatearsenal.PrivateArsenalModPlugin')
+    }
+}

@@ -1,0 +1,14 @@
+fieldID,fieldName,fieldType,defaultValue,minValue,maxValue,fieldDescription,tab
+repa_re_days_no_core,Research days - no core,Int,30,1,1000,Days to reverse-engineer one item with no AI core assigned.,Reverse Engineering
+repa_re_days_gamma,Research days - gamma core,Int,20,1,1000,Days to reverse-engineer one item with a gamma core assigned.,Reverse Engineering
+repa_re_days_beta,Research days - beta core,Int,15,1,1000,Days to reverse-engineer one item with a beta core assigned.,Reverse Engineering
+repa_re_days_alpha,Research days - alpha core,Int,5,1,1000,Days to reverse-engineer one item with an alpha core assigned.,Reverse Engineering
+repa_re_days_omega,Research days - omega core,Int,2,1,1000,Days to reverse-engineer one item with an omega core assigned.,Reverse Engineering
+repa_re_drone_day_reduction,Drone Replicator day reduction,Int,1,0,100,Flat days removed from research time while a Combat Drone Replicator is installed in the hub.,Reverse Engineering
+repa_re_improve_blueprint_copies,Improve blueprint copies,Int,1,1,10,Blueprint copies an improved hub also produces per item. Un-improved hubs produce no blueprint and only stock the Private Arsenal.,Reverse Engineering
+repa_re_price_mult_no_core,Arsenal price x - no core,Double,2.0,0,20,Arsenal price multiplier vs base item value with no AI core assigned.,Reverse Engineering
+repa_re_price_mult_gamma,Arsenal price x - gamma core,Double,1.6,0,20,Arsenal price multiplier vs base item value with a gamma core assigned.,Reverse Engineering
+repa_re_price_mult_beta,Arsenal price x - beta core,Double,1.0,0,20,Arsenal price multiplier vs base item value with a beta core assigned.,Reverse Engineering
+repa_re_price_mult_alpha,Arsenal price x - alpha core,Double,0.4,0,20,Arsenal price multiplier vs base item value with an alpha core assigned.,Reverse Engineering
+repa_re_price_mult_omega,Arsenal price x - omega core,Double,0.0,0,20,Arsenal price multiplier vs base item value with an omega core assigned (0 = free).,Reverse Engineering
+repa_re_debug_logging,Debug logging,Boolean,false,,,Write verbose reverse-engineering logs to starsector.log.,Reverse Engineering

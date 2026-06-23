@@ -1,0 +1,2 @@
+name,id,tags,tech/manufacturer,rarity,base price,stack size,cargo space,baseRaidDanger,icon,sound id,sound id drop,plugin,plugin params,desc,order
+Base Fighter Blueprint,fighter_bp,single_bp,,,3000,1000,1,,graphics/icons/cargo/blueprint_fighter.png,ui_chip_pickup,ui_fighter_bp_drop,privatearsenal.items.SafeFighterBlueprintItemPlugin,,Enables heavy industry to construct fighter LPCs described by this blueprint.,320

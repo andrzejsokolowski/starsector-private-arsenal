@@ -1,0 +1,1 @@
+- Integrate building tier with AOTD VOK

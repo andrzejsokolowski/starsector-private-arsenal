@@ -1,0 +1,10 @@
+{
+    "graphics": {
+        "PrivateArsenal": {
+            "notif": "graphics/icons/reports/notif.png"
+        },
+        "intel": {
+            "faction_systems": "graphics/icons/reports/notif.png"
+        }
+    }
+}
