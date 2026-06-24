@@ -10,6 +10,7 @@ import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -37,6 +38,7 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     public void updateCargoPrePlayerInteraction() {
         if (!hasReverseEngHub()) {
             getCargo().clear();
+            getCargo().initMothballedShips(safeFactionId());
             return;
         }
         refreshMarketStock();
@@ -44,9 +46,11 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
 
     public void refreshMarketStock() {
         getCargo().clear();
-        if (getCargo().getMothballedShips() != null) {
-            getCargo().getMothballedShips().clear();
-        }
+        // The mothballed-ship stockpile must be (re)initialised with a valid, loaded
+        // faction id. Otherwise its FleetData serialises a null faction and crashes the
+        // save with an NPE in FleetData.readResolve - even after the hub is gone and the
+        // submarket is left stashed in colony memory. The colony owner is always loaded.
+        getCargo().initMothballedShips(safeFactionId());
         int tier = getHubTier();
         addProducedWeapons(); // tier 1+
         if (tier >= 2) {
@@ -56,6 +60,14 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
             addProducedShips(); // tier 3+
         }
         getCargo().sort();
+    }
+
+    /** A faction id guaranteed to resolve, for initialising the mothballed-ship stockpile. */
+    private String safeFactionId() {
+        if (market != null && market.getFaction() != null) {
+            return market.getFaction().getId();
+        }
+        return Factions.NEUTRAL;
     }
 
     private boolean hasReverseEngHub() {

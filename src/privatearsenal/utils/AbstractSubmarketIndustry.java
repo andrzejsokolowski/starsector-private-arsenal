@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.econ.MarketAPI.MarketInteractionMode;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.impl.campaign.econ.impl.BaseIndustry;
 
@@ -21,6 +22,9 @@ public abstract class AbstractSubmarketIndustry extends BaseIndustry {
     protected String factionSubMarketID;
 
     private static final String STASH_PREFIX = "$repa_savedSub_";
+
+    /** Set while the industry is being permanently demolished (not upgraded). */
+    private transient boolean beingPermanentlyRemoved = false;
 
     public AbstractSubmarketIndustry(String submarketId, String factionSubMarketID) {
         this.submarketId = submarketId;
@@ -63,7 +67,31 @@ public abstract class AbstractSubmarketIndustry extends BaseIndustry {
 
         if (market.isPlayerOwned()) {
             for (String[] s : getManagedSubmarkets()) {
-                stashAndRemove(s[0]);
+                if (beingPermanentlyRemoved) {
+                    purgeSubmarket(s[0]);
+                } else {
+                    stashAndRemove(s[0]);
+                }
+            }
+        }
+    }
+
+    /**
+     * On a real demolition (not a tier upgrade) remove the managed submarkets and drop
+     * any stashed copies from colony memory, so nothing is left to rot there and break
+     * the next save. On an upgrade (forUpgrade == true) the stash is kept so deposited
+     * items survive the tier change.
+     */
+    @Override
+    public void notifyBeingRemoved(MarketInteractionMode mode, boolean forUpgrade) {
+        super.notifyBeingRemoved(mode, forUpgrade);
+
+        if (!forUpgrade) {
+            beingPermanentlyRemoved = true;
+            if (market != null) {
+                for (String[] s : getManagedSubmarkets()) {
+                    purgeSubmarket(s[0]);
+                }
             }
         }
     }
@@ -97,6 +125,14 @@ public abstract class AbstractSubmarketIndustry extends BaseIndustry {
             market.getMemoryWithoutUpdate().set(STASH_PREFIX + subId, open);
             market.removeSubmarket(subId);
         }
+    }
+
+    /** Removes the live submarket and drops its stashed copy from memory entirely. */
+    private void purgeSubmarket(String subId) {
+        if (market.getSubmarket(subId) != null) {
+            market.removeSubmarket(subId);
+        }
+        market.getMemoryWithoutUpdate().unset(STASH_PREFIX + subId);
     }
 
     private SubmarketAPI getStashed(String subId) {
