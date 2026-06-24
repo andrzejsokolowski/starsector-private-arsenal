@@ -35,3 +35,7 @@ pom.xml.bak
 *.log
 .classpath
 .factorypath
+
+# Release artifacts (packaged by hand for the mod manager)
+*.zip
+ReverseEngineeredPrivateArsenal-v*/

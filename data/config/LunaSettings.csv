@@ -6,6 +6,10 @@ repa_re_days_alpha,Research days - alpha core,Int,5,1,1000,Days to reverse-engin
 repa_re_days_omega,Research days - omega core,Int,2,1,1000,Days to reverse-engineer one item with an omega core assigned.,Reverse Engineering
 repa_re_drone_day_reduction,Drone Replicator day reduction,Int,1,0,100,Flat days removed from research time while a Combat Drone Replicator is installed in the hub.,Reverse Engineering
 repa_re_improve_blueprint_copies,Improve blueprint copies,Int,1,1,10,Blueprint copies an improved hub also produces per item. Un-improved hubs produce no blueprint and only stock the Private Arsenal.,Reverse Engineering
+repa_re_base_research_slots,Research slots per hub tier,Int,2,1,50,Items researched in parallel per type equals this value times the hub tier divided by the item slot size. 2 gives 6 weapon slots at tier 3.,Reverse Engineering
+repa_re_size_weapon,Slot size - weapon,Int,1,1,20,Slots one weapon takes up. Higher means fewer weapons researched at once.,Reverse Engineering
+repa_re_size_fighter,Slot size - fighter wing,Int,2,1,20,Slots one fighter wing takes up. Higher means fewer fighters researched at once.,Reverse Engineering
+repa_re_size_ship,Slot size - ship,Int,3,1,20,Slots one ship takes up. Higher means fewer ships researched at once.,Reverse Engineering
 repa_re_price_mult_no_core,Arsenal price x - no core,Double,2.0,0,20,Arsenal price multiplier vs base item value with no AI core assigned.,Reverse Engineering
 repa_re_price_mult_gamma,Arsenal price x - gamma core,Double,1.6,0,20,Arsenal price multiplier vs base item value with a gamma core assigned.,Reverse Engineering
 repa_re_price_mult_beta,Arsenal price x - beta core,Double,1.0,0,20,Arsenal price multiplier vs base item value with a beta core assigned.,Reverse Engineering

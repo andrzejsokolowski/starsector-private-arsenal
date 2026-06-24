@@ -111,6 +111,25 @@ public class ReverseEngSettings {
         return getInt("repa_re_improve_blueprint_copies", 1);
     }
 
+    // --- Parallel research slots (per item type, scaled by hub tier and item size) ---
+
+    /** Slot budget per hub tier. Items researched in parallel per type = this * tier / itemSize. */
+    public static int baseResearchSlots() {
+        return getInt("repa_re_base_research_slots", 2);
+    }
+
+    public static int sizeWeapon() {
+        return getInt("repa_re_size_weapon", 1);
+    }
+
+    public static int sizeFighter() {
+        return getInt("repa_re_size_fighter", 2);
+    }
+
+    public static int sizeShip() {
+        return getInt("repa_re_size_ship", 3);
+    }
+
     // --- Arsenal price multipliers (vs base item value, by assigned core) ---
 
     public static float priceMultNoCore() {

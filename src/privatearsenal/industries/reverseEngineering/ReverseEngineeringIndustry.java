@@ -58,7 +58,7 @@ public class ReverseEngineeringIndustry extends MultiTierIndustry {
 
     @Override
     public String getDescriptionOverride() {
-        String toReturn = "A high-tech facility dedicated to analyzing and reproducing advanced technology through reverse engineering. By deconstructing recovered items, it allows you to expand your faction's capabilities.\n\nPlace items into the storage to reverse engineer them. Each finished item is unlocked in the integrated Private Arsenal submarket, where you can buy copies. Items already reverse-engineered here are refused by the storage.\n\nResearch speed and Arsenal prices both depend on the assigned AI core (an Omega core makes the Arsenal free). Improving the hub also produces the item's actual blueprint in storage, and installing a Combat Drone Replicator colony item speeds up research.";
+        String toReturn = "A high-tech facility dedicated to analyzing and reproducing advanced technology through reverse engineering. By deconstructing recovered items, it allows you to expand your faction's capabilities.\n\nPlace items into the storage to reverse engineer them. Each finished item is unlocked in the integrated Private Arsenal submarket, where you can buy copies. Items already reverse-engineered here are refused by the storage. The hub researches several items of each type in parallel; capacity grows with the hub tier, and larger items take up more of it (a ship uses more capacity than a weapon).\n\nResearch speed and Arsenal prices both depend on the assigned AI core (an Omega core makes the Arsenal free). Improving the hub also produces the item's actual blueprint in storage, and installing a Combat Drone Replicator colony item speeds up research.";
 
         toReturn += "\n\n";
         if (isTier(1)) {
@@ -186,31 +186,28 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
     }
 
     @Override
-    protected String getSprite() {
-        if (currentReverseEng == null) {
-            return "";
-        }
-        return currentReverseEng.getHullSpec().getSpriteName();
+    protected int getItemSlotSize() {
+        return ReverseEngSettings.sizeShip();
     }
 
-    protected boolean initDeconstruction() {
+    @Override
+    protected ShipVariantAPI pickNextItem(Set<String> excludeIds) {
         SubmarketAPI sub = market.getSubmarket(Ids.REVERSE_ENG_SUB);
 
         if (sub == null) {
             debugLog("Error: SubmarketAPI is null.");
-            return false;
+            return null;
         }
 
         CargoAPI storage = sub.getCargo();
         if (storage == null || storage.getMothballedShips() == null) {
             debugLog("Error: CargoAPI or Mothballed ships list is null.");
-            return false;
+            return null;
         }
 
         List<FleetMemberAPI> ships = storage.getMothballedShips().getMembersListCopy();
         if (ships.isEmpty()) {
-            debugLog("No mothballed ships available for deconstruction.");
-            return false;
+            return null;
         }
 
         Set<String> unlockedShips = Global.getSector().getPlayerFaction().getKnownShips();
@@ -220,8 +217,8 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
 
         for (FleetMemberAPI ship : ships) {
             String shipHullId = ship.getHullId();
-            // Never re-scan something already reverse-engineered (it's in the Private Arsenal).
-            if (produced.contains(shipHullId)) {
+            // Never re-scan something already produced or already chosen for this batch.
+            if (produced.contains(shipHullId) || excludeIds.contains(shipHullId)) {
                 continue;
             }
             if (!unlockedShips.contains(shipHullId)) {
@@ -236,14 +233,14 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
 
         for (FleetMemberAPI ship : availableShips) {
             if (ship != null) {
-                currentReverseEng = ship.getVariant();
+                ShipVariantAPI variant = ship.getVariant();
                 transferWeaponsAndWingsToStorage(ship);
                 storage.getMothballedShips().removeFleetMember(ship);
-                return true;
+                return variant;
             }
         }
 
-        return false;
+        return null;
     }
 
     public void transferWeaponsAndWingsToStorage(FleetMemberAPI fleetMember) {
@@ -280,18 +277,14 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
         storage.getCargo().sort();
     }
 
-    protected String getNameReverse() {
-        if (currentReverseEng == null) {
-            return "No ship";
-        }
-        return currentReverseEng.getHullSpec().getNameWithDesignationWithDashClass();
+    @Override
+    protected String getName(ShipVariantAPI item) {
+        return item.getHullSpec().getNameWithDesignationWithDashClass();
     }
 
-    protected String getIdReverse() {
-        if (currentReverseEng == null) {
-            return "No ship";
-        }
-        return currentReverseEng.getHullSpec().getHullId();
+    @Override
+    protected String getId(ShipVariantAPI item) {
+        return item.getHullSpec().getHullId();
     }
 
     protected SpecialItemData getSpecialItem(String id) {
@@ -306,32 +299,28 @@ class ReverseEngineeringWeaponIndustry extends AbstractReverseEngineeringIndustr
     }
 
     @Override
-    protected String getSprite() {
-        if (currentReverseEng == null) {
-            return "";
-        }
-        return currentReverseEng.getTurretSpriteName();
+    protected int getItemSlotSize() {
+        return ReverseEngSettings.sizeWeapon();
     }
 
     @Override
-    protected boolean initDeconstruction() {
+    protected WeaponSpecAPI pickNextItem(Set<String> excludeIds) {
         SubmarketAPI sub = market.getSubmarket(Ids.REVERSE_ENG_SUB);
 
         if (sub == null) {
             debugLog("Error: SubmarketAPI is null.");
-            return false;
+            return null;
         }
 
         CargoAPI storage = sub.getCargo();
         if (storage == null || storage.getWeapons() == null) {
             debugLog("Error: CargoAPI or Weapons list is null.");
-            return false;
+            return null;
         }
 
         List<CargoAPI.CargoItemQuantity<String>> weaponItems = storage.getWeapons();
         if (weaponItems.isEmpty()) {
-            debugLog("No weapons available for deconstruction.");
-            return false;
+            return null;
         }
 
         Set<String> unlockedWeapons = Global.getSector().getPlayerFaction().getKnownWeapons();
@@ -341,8 +330,8 @@ class ReverseEngineeringWeaponIndustry extends AbstractReverseEngineeringIndustr
 
         for (CargoAPI.CargoItemQuantity<String> weaponItem : weaponItems) {
             String weaponId = weaponItem.getItem();
-            // Never re-scan something already reverse-engineered (it's in the Private Arsenal).
-            if (produced.contains(weaponId)) {
+            // Never re-scan something already produced or already chosen for this batch.
+            if (produced.contains(weaponId) || excludeIds.contains(weaponId)) {
                 continue;
             }
             if (!unlockedWeapons.contains(weaponId)) {
@@ -359,26 +348,21 @@ class ReverseEngineeringWeaponIndustry extends AbstractReverseEngineeringIndustr
             WeaponSpecAPI weaponSpec = Global.getSettings().getWeaponSpec(weaponId);
 
             if (weaponSpec != null) {
-                currentReverseEng = weaponSpec;
                 storage.removeWeapons(weaponId, 1);
-                return true;
+                return weaponSpec;
             }
         }
-        return false;
+        return null;
     }
 
-    protected String getNameReverse() {
-        if (currentReverseEng == null) {
-            return "No weapon";
-        }
-        return currentReverseEng.getWeaponName();
+    @Override
+    protected String getName(WeaponSpecAPI item) {
+        return item.getWeaponName();
     }
 
-    protected String getIdReverse() {
-        if (currentReverseEng == null) {
-            return "No weapon";
-        }
-        return currentReverseEng.getWeaponId();
+    @Override
+    protected String getId(WeaponSpecAPI item) {
+        return item.getWeaponId();
     }
 
     protected SpecialItemData getSpecialItem(String id) {
@@ -393,32 +377,28 @@ class ReverseEngineeringFighterWingIndustry extends AbstractReverseEngineeringIn
     }
 
     @Override
-    protected String getSprite() {
-        if (currentReverseEng == null) {
-            return "";
-        }
-        return currentReverseEng.getVariant().getHullSpec().getSpriteName();
+    protected int getItemSlotSize() {
+        return ReverseEngSettings.sizeFighter();
     }
 
     @Override
-    protected boolean initDeconstruction() {
+    protected FighterWingSpecAPI pickNextItem(Set<String> excludeIds) {
         SubmarketAPI sub = market.getSubmarket(Ids.REVERSE_ENG_SUB);
 
         if (sub == null) {
             debugLog("Error: SubmarketAPI is null.");
-            return false;
+            return null;
         }
 
         CargoAPI storage = sub.getCargo();
         if (storage == null || storage.getFighters() == null) {
             debugLog("Error: CargoAPI or FighterWing list is null.");
-            return false;
+            return null;
         }
 
         List<CargoAPI.CargoItemQuantity<String>> fighterWingItems = storage.getFighters();
         if (fighterWingItems.isEmpty()) {
-            debugLog("No FighterWings available for deconstruction.");
-            return false;
+            return null;
         }
 
         Set<String> unlockedFighter = Global.getSector().getPlayerFaction().getKnownFighters();
@@ -428,8 +408,8 @@ class ReverseEngineeringFighterWingIndustry extends AbstractReverseEngineeringIn
 
         for (CargoAPI.CargoItemQuantity<String> fighterWingItem : fighterWingItems) {
             String fighterWingId = fighterWingItem.getItem();
-            // Never re-scan something already reverse-engineered (it's in the Private Arsenal).
-            if (produced.contains(fighterWingId)) {
+            // Never re-scan something already produced or already chosen for this batch.
+            if (produced.contains(fighterWingId) || excludeIds.contains(fighterWingId)) {
                 continue;
             }
             if (!unlockedFighter.contains(fighterWingId)) {
@@ -447,26 +427,21 @@ class ReverseEngineeringFighterWingIndustry extends AbstractReverseEngineeringIn
             FighterWingSpecAPI fighterWingSpec = Global.getSettings().getFighterWingSpec(fighterWingId);
 
             if (fighterWingSpec != null) {
-                currentReverseEng = fighterWingSpec;
                 storage.removeFighters(fighterWingId, 1);
-                return true;
+                return fighterWingSpec;
             }
         }
-        return false;
+        return null;
     }
 
-    protected String getNameReverse() {
-        if (currentReverseEng == null) {
-            return "No FighterWing";
-        }
-        return currentReverseEng.getWingName();
+    @Override
+    protected String getName(FighterWingSpecAPI item) {
+        return item.getWingName();
     }
 
-    protected String getIdReverse() {
-        if (currentReverseEng == null) {
-            return "No FighterWing";
-        }
-        return currentReverseEng.getId();
+    @Override
+    protected String getId(FighterWingSpecAPI item) {
+        return item.getId();
     }
 
     protected SpecialItemData getSpecialItem(String id) {
