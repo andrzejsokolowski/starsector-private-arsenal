@@ -66,7 +66,7 @@ public class ReverseEngineeringIndustry extends MultiTierIndustry {
         } else if (isTier(2)) {
             toReturn += "Tier 2: Only weapons and fighter wings are allowed.";
         } else if (isTier(3)) {
-            toReturn += "Tier 3: Weapons, fighter wings, and ships are allowed.";
+            toReturn += "Tier 3: Weapons, fighter wings, and ships are allowed. Ships can only be reverse-engineered once the hub has been improved with a story point.";
         }
         toReturn += "\n\n";
         toReturn += "Choose in priority the item you don t have discovered yet.";
@@ -192,6 +192,12 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
 
     @Override
     protected ShipVariantAPI pickNextItem(Set<String> excludeIds) {
+        // Ships may only be reverse-engineered once the hub has been improved with a story point.
+        Industry hub = market.getIndustry(Ids.REVERSE_ENG_3_IND);
+        if (hub == null || !hub.isImproved()) {
+            return null;
+        }
+
         SubmarketAPI sub = market.getSubmarket(Ids.REVERSE_ENG_SUB);
 
         if (sub == null) {

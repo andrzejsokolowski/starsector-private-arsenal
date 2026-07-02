@@ -15,4 +15,5 @@ repa_re_price_mult_gamma,Arsenal price x - gamma core,Double,1.6,0,20,Arsenal pr
 repa_re_price_mult_beta,Arsenal price x - beta core,Double,1.0,0,20,Arsenal price multiplier vs base item value with a beta core assigned.,Reverse Engineering
 repa_re_price_mult_alpha,Arsenal price x - alpha core,Double,0.4,0,20,Arsenal price multiplier vs base item value with an alpha core assigned.,Reverse Engineering
 repa_re_price_mult_omega,Arsenal price x - omega core,Double,0.0,0,20,Arsenal price multiplier vs base item value with an omega core assigned (0 = free).,Reverse Engineering
+repa_re_sell_ships_in_fleet,Sell reverse-engineered ships in fleet screen (Tier 3),Boolean,false,,,"When on, a Tier 3 hub's Private Arsenal stocks reverse-engineered ships and lets you buy them directly in the fleet screen, skipping the need for Heavy Industry. Off by default.",Reverse Engineering
 repa_re_debug_logging,Debug logging,Boolean,false,,,Write verbose reverse-engineering logs to starsector.log.,Reverse Engineering

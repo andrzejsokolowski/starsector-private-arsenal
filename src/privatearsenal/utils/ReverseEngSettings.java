@@ -172,4 +172,13 @@ public class ReverseEngSettings {
     public static boolean debugLogging() {
         return getBoolean("repa_re_debug_logging", false);
     }
+
+    /**
+     * When enabled, a Tier 3 hub's Private Arsenal stocks reverse-engineered ships and
+     * shows in the fleet screen so they can be bought directly (skipping Heavy Industry).
+     * Off by default: normally you still need Heavy Industry to build ships from blueprints.
+     */
+    public static boolean sellShipsInFleet() {
+        return getBoolean("repa_re_sell_ships_in_fleet", false);
+    }
 }

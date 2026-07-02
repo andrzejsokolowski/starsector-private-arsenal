@@ -3,6 +3,7 @@ package privatearsenal.submarkets;
 import com.fs.starfarer.api.campaign.CargoStackAPI;
 import com.fs.starfarer.api.campaign.CoreUIAPI;
 import com.fs.starfarer.api.campaign.SubmarketPlugin;
+import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
@@ -113,6 +114,8 @@ public class ReverseEngineeringSubmarketPlugin extends BaseArsenalSubmarketPlugi
 
             if (!market.hasIndustry(Ids.REVERSE_ENG_3_IND)) {
                 return "Can not be Reverse Engineered - Ships are allowed in Tier 3.";
+            } else if (!isHubImproved()) {
+                return "Can not be Reverse Engineered - Improve the hub with a story point to allow ships.";
             } else {
                 return "";
             }
@@ -170,11 +173,18 @@ public class ReverseEngineeringSubmarketPlugin extends BaseArsenalSubmarketPlugi
 
     @Override
     public boolean isIllegalOnSubmarket(FleetMemberAPI member, SubmarketPlugin.TransferAction action) {
-        if (market.hasIndustry(Ids.REVERSE_ENG_3_IND)) {
+        // Ships may only be reverse-engineered by a Tier 3 hub improved with a story point.
+        if (market.hasIndustry(Ids.REVERSE_ENG_3_IND) && isHubImproved()) {
             // Refuse re-depositing a ship the hub has already reverse-engineered.
             return action == TransferAction.PLAYER_SELL && alreadyReverseEngineered(member);
         }
         return true;
+    }
+
+    /** True when the Tier 3 hub has been improved with a story point (required to reverse-engineer ships). */
+    private boolean isHubImproved() {
+        Industry hub = market.getIndustry(Ids.REVERSE_ENG_3_IND);
+        return hub != null && hub.isImproved();
     }
 
     /**

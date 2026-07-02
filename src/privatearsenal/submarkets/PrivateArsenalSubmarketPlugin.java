@@ -1,7 +1,9 @@
 package privatearsenal.submarkets;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.econ.Industry;
@@ -56,7 +58,8 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
         if (tier >= 2) {
             addProducedFighters(); // tier 2+
         }
-        if (tier >= 3) {
+        // Ships are only stocked (and sold in the fleet screen) when the player opts in via LunaSettings.
+        if (tier >= 3 && ReverseEngSettings.sellShipsInFleet()) {
             addProducedShips(); // tier 3+
         }
         getCargo().sort();
@@ -139,13 +142,33 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     }
 
     private void addProducedShips() {
-        List<String> ids = new ArrayList<String>(
-                AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_SHIPS_MEMORY));
-        for (String hullId : ids) {
+        Set<String> produced = AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_SHIPS_MEMORY);
+
+        // The mothballed-ship stockpile survives refreshMarketStock's clear() (unlike weapon and
+        // fighter stacks, which are re-added fresh each time). So keep exactly one copy of each
+        // reverse-engineered ship: track what's already stocked, and drop stray duplicates that an
+        // older build stacked up. Only then top up any hull that isn't present yet.
+        Set<String> stocked = new HashSet<String>();
+        for (FleetMemberAPI existing : getCargo().getMothballedShips().getMembersListCopy()) {
+            if (existing == null) {
+                continue;
+            }
+            String hullId = existing.getHullId();
+            // Not a current product, or a second copy of one we've already kept -> remove it.
+            if (!produced.contains(hullId) || !stocked.add(hullId)) {
+                getCargo().getMothballedShips().removeFleetMember(existing);
+            }
+        }
+
+        for (String hullId : produced) {
+            if (stocked.contains(hullId)) {
+                continue;
+            }
             try {
                 FleetMemberAPI member = createMothballMember(hullId);
                 if (member != null) {
                     getCargo().getMothballedShips().addFleetMember(member);
+                    stocked.add(hullId);
                 }
             } catch (Throwable t) {
                 // stale / removed hull id -> skip
@@ -188,6 +211,16 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     }
 
     @Override
+    public boolean isIllegalOnSubmarket(FleetMemberAPI member, TransferAction action) {
+        return action == TransferAction.PLAYER_SELL; // Buy-only: no selling ships to the arsenal.
+    }
+
+    @Override
+    public String getIllegalTransferText(FleetMemberAPI member, TransferAction action) {
+        return "You cannot sell ships here.";
+    }
+
+    @Override
     public boolean isTooltipExpandable() {
         return super.isTooltipExpandable();
     }
@@ -196,8 +229,13 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     protected void createTooltipAfterDescription(TooltipMakerAPI tooltip, boolean expanded) {
         super.createTooltipAfterDescription(tooltip, expanded);
         tooltip.addPara(
-                "Stocks every weapon, fighter wing and ship your Reverse Engineering Hub has reverse-engineered. Prices scale with the AI core assigned to the hub (an Omega core makes everything free). Selling items is not allowed.",
+                "Stocks every weapon and fighter wing your Reverse Engineering Hub has reverse-engineered. Prices scale with the AI core assigned to the hub (an Omega core makes everything free). Selling items is not allowed.",
                 10f);
+        if (ReverseEngSettings.sellShipsInFleet()) {
+            tooltip.addPara(
+                    "Reverse-engineered ships are also stocked here and can be bought directly in the fleet screen.",
+                    10f);
+        }
     }
 
     @Override
@@ -215,6 +253,7 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
 
     @Override
     public boolean showInFleetScreen() {
-        return false;
+        // Only surface the ship-buying tab when the player has enabled selling ships and the hub is Tier 3.
+        return ReverseEngSettings.sellShipsInFleet() && getHubTier() >= 3;
     }
 }
