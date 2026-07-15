@@ -206,10 +206,20 @@ public class ReverseEngineeringSubmarketPlugin extends BaseArsenalSubmarketPlugi
         return false;
     }
 
-    /** True when this ship's hull has already been reverse-engineered here. */
+    /**
+     * True when this ship's hull has already been reverse-engineered here. A "(D)"
+     * hull is judged by its base: a Hammerhead (D) counts as done once a Hammerhead
+     * has been reverse-engineered, since the hub produces the base hull, not the
+     * D-mod skin. Uses the same normalization the ship industry produces with, so the
+     * refusal and the product always agree.
+     */
     private boolean alreadyReverseEngineered(FleetMemberAPI member) {
-        return member != null && AbstractReverseEngineeringIndustry
-                .getProducedSet(Ids.PRODUCED_SHIPS_MEMORY).contains(member.getHullId());
+        if (member == null || member.getVariant() == null) {
+            return false;
+        }
+        String hullId = AbstractReverseEngineeringIndustry.reverseEngHullId(member.getVariant().getHullSpec());
+        return hullId != null
+                && AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_SHIPS_MEMORY).contains(hullId);
     }
 
     @Override

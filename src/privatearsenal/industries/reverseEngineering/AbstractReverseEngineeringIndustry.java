@@ -12,6 +12,7 @@ import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SpecialItemData;
 import com.fs.starfarer.api.campaign.econ.Industry;
+import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
 import com.fs.starfarer.api.impl.campaign.intel.MessageIntel;
@@ -354,6 +355,30 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
     public static Set<String> getProducedSet(String key) {
         SaveOneData<HashSet<String>> store = new SaveOneData<HashSet<String>>(key, new HashSet<String>());
         return store.getData();
+    }
+
+    /**
+     * The hull we actually reverse-engineer for a given ship. A degraded "(D)" hull
+     * maps to its clean base hull, so a Hammerhead (D) is the same product as a
+     * Hammerhead (matching vanilla, where blueprints and known-ship entries are keyed
+     * by the base hull). Non-D hulls are returned unchanged. Shared by the ship
+     * industry (what it produces) and the storage submarket (what it refuses), so the
+     * two always agree.
+     */
+    public static ShipHullSpecAPI reverseEngHull(ShipHullSpecAPI spec) {
+        if (spec != null && spec.isDHull()) {
+            ShipHullSpecAPI base = spec.getBaseHull();
+            if (base != null) {
+                return base;
+            }
+        }
+        return spec;
+    }
+
+    /** Base-normalized hull id for a ship, or null if the spec is null. See {@link #reverseEngHull}. */
+    public static String reverseEngHullId(ShipHullSpecAPI spec) {
+        ShipHullSpecAPI effective = reverseEngHull(spec);
+        return effective != null ? effective.getHullId() : null;
     }
 
     protected void debugLog(String message) {

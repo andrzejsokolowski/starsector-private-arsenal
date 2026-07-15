@@ -2,6 +2,23 @@
 
 All notable changes to Reverse Engineered Private Arsenal are documented here.
 
+## 1.2.4
+
+### Changed
+- A "(D)" ship whose base hull is already reverse-engineered is now refused with the
+  same "Already reverse-engineered - available in the Private Arsenal." message as any
+  other already-scanned ship, rather than a "(D)"-specific note. (D) and base ships
+  read identically to the player.
+
+## 1.2.3
+
+### Fixed
+- The Reverse Engineering Storage now refuses a "(D)" ship whose clean base hull has
+  already been reverse-engineered, with an explanatory message ("Base hull already
+  reverse-engineered - the (D) variant adds nothing"), instead of silently accepting
+  a ship it would never process (the picker already skipped it as a duplicate of the
+  base). This completes the "(D)" handling started in 1.2.2.
+
 ## 1.2.2
 
 ### Fixed
