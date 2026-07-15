@@ -2,6 +2,16 @@
 
 All notable changes to Reverse Engineered Private Arsenal are documented here.
 
+## 1.2.2
+
+### Fixed
+- Degraded "(D)" ships are no longer treated as a separate hull from their clean
+  base. Reverse-engineering e.g. a Hammerhead (D) now yields a Hammerhead product
+  (produced-set entry, Arsenal stock, and blueprint keying) instead of a distinct
+  `hammerhead_D` entry, matching vanilla where blueprints and known-ship entries are
+  keyed by the base hull. Regular (non-D) faction skins are unchanged. Note: `_D`
+  ids already stored in an existing save from before this fix are not migrated.
+
 ## 1.2.1
 
 ### Fixed

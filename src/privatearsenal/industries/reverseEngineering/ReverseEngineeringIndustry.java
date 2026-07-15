@@ -223,7 +223,8 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
         List<FleetMemberAPI> allInCargoShips = new ArrayList<>();
 
         for (FleetMemberAPI ship : ships) {
-            String shipHullId = ship.getHullId();
+            ShipVariantAPI shipVariant = ship.getVariant();
+            String shipHullId = shipVariant != null ? reHullId(shipVariant.getHullSpec()) : ship.getHullId();
             // Never re-scan something already produced or already chosen for this batch.
             if (produced.contains(shipHullId) || excludeIds.contains(shipHullId)) {
                 continue;
@@ -286,12 +287,12 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
 
     @Override
     protected String getName(ShipVariantAPI item) {
-        return item.getHullSpec().getNameWithDesignationWithDashClass();
+        return effectiveHull(item.getHullSpec()).getNameWithDesignationWithDashClass();
     }
 
     @Override
     protected String getId(ShipVariantAPI item) {
-        return item.getHullSpec().getHullId();
+        return reHullId(item.getHullSpec());
     }
 
     protected SpecialItemData getSpecialItem(String id) {
@@ -300,7 +301,28 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
 
     @Override
     protected boolean isBlueprintable(ShipVariantAPI item) {
-        return !item.getHullSpec().hasTag(Tags.NO_BP_DROP);
+        return !effectiveHull(item.getHullSpec()).hasTag(Tags.NO_BP_DROP);
+    }
+
+    /**
+     * The hull we actually reverse-engineer for a given ship. A degraded "(D)" hull
+     * maps to its clean base hull, so e.g. a Hammerhead (D) yields a Hammerhead entry
+     * (and, where applicable, a {@code ship_bp:hammerhead} blueprint) rather than a
+     * separate {@code hammerhead_D} product. This matches vanilla, where blueprints
+     * and known-ship entries are keyed by the base hull, not its D-mod skin.
+     */
+    private static ShipHullSpecAPI effectiveHull(ShipHullSpecAPI spec) {
+        if (spec != null && spec.isDHull()) {
+            ShipHullSpecAPI base = spec.getBaseHull();
+            if (base != null) {
+                return base;
+            }
+        }
+        return spec;
+    }
+
+    private static String reHullId(ShipHullSpecAPI spec) {
+        return effectiveHull(spec).getHullId();
     }
 }
 
