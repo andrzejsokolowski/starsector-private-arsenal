@@ -2,6 +2,17 @@
 
 All notable changes to Reverse Engineered Private Arsenal are documented here.
 
+## 1.2.1
+
+### Fixed
+- Ships, weapons and fighter wings tagged `no_bp_drop` (e.g. Tahlan's Legio daemon
+  hulls like `tahlan_hammerhead_dmn`) no longer produce a broken, non-functional
+  blueprint. The game refuses to learn blueprints for these, so the emitted
+  `ship_bp`/`weapon_bp`/`fighter_bp` never stuck and the known-blueprints list fell
+  back to a placeholder. Such items are still reverse-engineered and stocked in the
+  Private Arsenal as before; only the dud blueprint is skipped, and the completion
+  message notes when an item is Arsenal-only.
+
 ## 1.2.0
 
 ### Added

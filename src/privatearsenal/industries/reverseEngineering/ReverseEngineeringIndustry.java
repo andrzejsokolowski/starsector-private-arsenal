@@ -17,6 +17,7 @@ import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -296,6 +297,11 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
     protected SpecialItemData getSpecialItem(String id) {
         return new SpecialItemData("ship_bp", id);
     }
+
+    @Override
+    protected boolean isBlueprintable(ShipVariantAPI item) {
+        return !item.getHullSpec().hasTag(Tags.NO_BP_DROP);
+    }
 }
 
 class ReverseEngineeringWeaponIndustry extends AbstractReverseEngineeringIndustry<WeaponSpecAPI> {
@@ -373,6 +379,11 @@ class ReverseEngineeringWeaponIndustry extends AbstractReverseEngineeringIndustr
 
     protected SpecialItemData getSpecialItem(String id) {
         return new SpecialItemData("weapon_bp", id);
+    }
+
+    @Override
+    protected boolean isBlueprintable(WeaponSpecAPI item) {
+        return !item.hasTag(Tags.NO_BP_DROP);
     }
 }
 
@@ -452,5 +463,10 @@ class ReverseEngineeringFighterWingIndustry extends AbstractReverseEngineeringIn
 
     protected SpecialItemData getSpecialItem(String id) {
         return new SpecialItemData("fighter_bp", id);
+    }
+
+    @Override
+    protected boolean isBlueprintable(FighterWingSpecAPI item) {
+        return !item.hasTag(Tags.NO_BP_DROP);
     }
 }

@@ -152,6 +152,19 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
     // blueprint = new SpecialItemData("ship_bp", hullId); // weapon_bp / fighter_bp
     protected abstract SpecialItemData getSpecialItem(String id);
 
+    /**
+     * Whether this item can be turned into a working blueprint. Some hulls,
+     * weapons and wings are tagged {@code no_bp_drop} by their mod (e.g. Tahlan's
+     * Legio daemon ships): vanilla refuses to hand out blueprints for them, and a
+     * {@code ship_bp}/{@code weapon_bp}/{@code fighter_bp} built for such an id is
+     * non-functional (it never sticks in the player's known blueprints). We still
+     * reverse-engineer and stock these in the Private Arsenal; we just skip the
+     * blueprint step. Defaults to true.
+     */
+    protected boolean isBlueprintable(T item) {
+        return true;
+    }
+
     // --- Daily loop --------------------------------------------------------
 
     protected void onNewDay() {
@@ -212,6 +225,7 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
         int copies = improved ? Math.max(1, ReverseEngSettings.improveBlueprintCopies()) : 0;
         int blueprintsMade = 0;
         int blueprintsFailed = 0;
+        int blueprintsSkipped = 0;
 
         for (T item : batch) {
             String id = getId(item);
@@ -219,7 +233,10 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
             registerProduced(id);
             // The story-point improvement additionally produces the actual blueprint in storage.
             if (improved) {
-                if (generateBlueprint(id, copies)) {
+                // Items the game forbids as blueprints (no_bp_drop) stay Arsenal-only.
+                if (!isBlueprintable(item)) {
+                    blueprintsSkipped++;
+                } else if (generateBlueprint(id, copies)) {
                     blueprintsMade++;
                 } else {
                     blueprintsFailed++;
@@ -227,7 +244,7 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
             }
         }
 
-        notifyBatchCompletion(batch, copies, blueprintsMade, blueprintsFailed);
+        notifyBatchCompletion(batch, copies, blueprintsMade, blueprintsFailed, blueprintsSkipped);
 
         currentBatch = new ArrayList<T>();
         daysPassed = 0;
@@ -250,7 +267,7 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
                 market.getFaction().getBrightUIColor());
     }
 
-    protected void notifyBatchCompletion(List<T> batch, int copies, int made, int failed) {
+    protected void notifyBatchCompletion(List<T> batch, int copies, int made, int failed, int skipped) {
         int n = batch.size();
         String countLabel = n + " " + pluralize(typeReverse, n);
         String names = joinNames(batch, 12);
@@ -277,6 +294,11 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
             intel.addLine(BaseIntelPlugin.BULLET + "No storage space for %s blueprint(s).",
                     Misc.getNegativeHighlightColor(),
                     new String[] { "" + failed });
+        }
+        if (skipped > 0) {
+            intel.addLine(BaseIntelPlugin.BULLET + "%s item(s) cannot be made into a blueprint; Arsenal-only.",
+                    Misc.getGrayColor(),
+                    new String[] { "" + skipped });
         }
 
         intel.setIcon(Global.getSettings().getSpriteName("PrivateArsenal", "notif"));
