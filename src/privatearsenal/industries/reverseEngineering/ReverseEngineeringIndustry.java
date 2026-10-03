@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoAPI;
+import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SpecialItemData;
 import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
 import com.fs.starfarer.api.campaign.econ.Industry;
@@ -59,7 +60,7 @@ public class ReverseEngineeringIndustry extends MultiTierIndustry {
 
     @Override
     public String getDescriptionOverride() {
-        String toReturn = "A high-tech facility dedicated to analyzing and reproducing advanced technology through reverse engineering. By deconstructing recovered items, it allows you to expand your faction's capabilities.\n\nPlace items into the storage to reverse engineer them. Each finished item is unlocked in the integrated Private Arsenal submarket, where you can buy copies. Items already reverse-engineered here are refused by the storage. The hub researches several items of each type in parallel; capacity grows with the hub tier, and larger items take up more of it (a ship uses more capacity than a weapon).\n\nResearch speed and Arsenal prices both depend on the assigned AI core (an Omega core makes the Arsenal free). Improving the hub also produces the item's actual blueprint in storage, and installing a Combat Drone Replicator colony item speeds up research.";
+        String toReturn = "A high-tech facility dedicated to analyzing and reproducing advanced technology through reverse engineering. By deconstructing recovered items, it allows you to expand your faction's capabilities.\n\nPlace items into the storage to reverse engineer them. Each finished item is unlocked in the integrated Private Arsenal submarket, where you can buy copies. Items already reverse-engineered here are refused by the storage. The hub researches several items of each type in parallel; capacity grows with the hub tier, and larger items take up more of it (a ship uses more capacity than a weapon).\n\nResearch speed and Arsenal prices both depend on the assigned AI core (an Omega core makes the Arsenal free). Improving the hub also produces the item's actual blueprint, and installing a Combat Drone Replicator colony item speeds up research.";
 
         toReturn += "\n\n";
         if (isTier(1)) {
@@ -120,10 +121,15 @@ public class ReverseEngineeringIndustry extends MultiTierIndustry {
     @Override
     public void addImproveDesc(TooltipMakerAPI info, ImprovementDescriptionMode mode) {
         float opad = 10f;
-        int copies = Math.max(1, ReverseEngSettings.improveBlueprintCopies());
-        String copiesText = copies > 1 ? (copies + " copies of its blueprint") : "its blueprint";
-        info.addPara("Each reverse-engineered item also produces %s in storage. Un-improved hubs only stock the "
-                + "Private Arsenal.", 0f, Misc.getHighlightColor(), copiesText);
+        if (ReverseEngSettings.learnBlueprintsDirectly()) {
+            info.addPara("Each reverse-engineered item is also added to %s. Un-improved hubs only stock the "
+                    + "Private Arsenal.", 0f, Misc.getHighlightColor(), "your known blueprints");
+        } else {
+            int copies = Math.max(1, ReverseEngSettings.improveBlueprintCopies());
+            String copiesText = copies > 1 ? (copies + " copies of its blueprint") : "its blueprint";
+            info.addPara("Each reverse-engineered item also produces %s in storage. Un-improved hubs only stock the "
+                    + "Private Arsenal.", 0f, Misc.getHighlightColor(), copiesText);
+        }
         info.addSpacer(opad);
         super.addImproveDesc(info, mode);
     }
@@ -300,6 +306,15 @@ class ReverseEngineeringShipIndustry extends AbstractReverseEngineeringIndustry<
     }
 
     @Override
+    protected boolean learnBlueprint(FactionAPI player, String id) {
+        if (player.knowsShip(id)) {
+            return false;
+        }
+        player.addKnownShip(id, true);
+        return true;
+    }
+
+    @Override
     protected boolean isBlueprintable(ShipVariantAPI item) {
         return !reverseEngHull(item.getHullSpec()).hasTag(Tags.NO_BP_DROP);
     }
@@ -380,6 +395,15 @@ class ReverseEngineeringWeaponIndustry extends AbstractReverseEngineeringIndustr
 
     protected SpecialItemData getSpecialItem(String id) {
         return new SpecialItemData("weapon_bp", id);
+    }
+
+    @Override
+    protected boolean learnBlueprint(FactionAPI player, String id) {
+        if (player.knowsWeapon(id)) {
+            return false;
+        }
+        player.addKnownWeapon(id, true);
+        return true;
     }
 
     @Override
@@ -464,6 +488,15 @@ class ReverseEngineeringFighterWingIndustry extends AbstractReverseEngineeringIn
 
     protected SpecialItemData getSpecialItem(String id) {
         return new SpecialItemData("fighter_bp", id);
+    }
+
+    @Override
+    protected boolean learnBlueprint(FactionAPI player, String id) {
+        if (player.knowsFighter(id)) {
+            return false;
+        }
+        player.addKnownFighter(id, true);
+        return true;
     }
 
     @Override

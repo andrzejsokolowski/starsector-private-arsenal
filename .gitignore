@@ -36,6 +36,7 @@ pom.xml.bak
 .classpath
 .factorypath
 
-# Release artifacts (packaged by hand for the mod manager)
+# Release ZIP and its staging folder, both made by `gradle releaseZip`
 *.zip
 ReverseEngineeredPrivateArsenal-v*/
+/ReverseEngineeredPrivateArsenal/

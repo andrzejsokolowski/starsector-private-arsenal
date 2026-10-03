@@ -5,7 +5,8 @@ repa_re_days_beta,Research days - beta core,Int,15,1,1000,Days to reverse-engine
 repa_re_days_alpha,Research days - alpha core,Int,5,1,1000,Days to reverse-engineer one item with an alpha core assigned.,Reverse Engineering
 repa_re_days_omega,Research days - omega core,Int,2,1,1000,Days to reverse-engineer one item with an omega core assigned.,Reverse Engineering
 repa_re_drone_day_reduction,Drone Replicator day reduction,Int,1,0,100,Flat days removed from research time while a Combat Drone Replicator is installed in the hub.,Reverse Engineering
-repa_re_improve_blueprint_copies,Improve blueprint copies,Int,1,1,10,Blueprint copies an improved hub also produces per item. Un-improved hubs produce no blueprint and only stock the Private Arsenal.,Reverse Engineering
+repa_re_improve_blueprint_copies,Improve blueprint copies,Int,1,1,10,Blueprint copies an improved hub also produces per item. Un-improved hubs produce no blueprint and only stock the Private Arsenal. Not used while Add blueprints directly to known blueprints is on.,Reverse Engineering
+repa_re_learn_blueprints,Add blueprints directly to known blueprints,Boolean,false,,,"When on, an improved hub adds each reverse-engineered item straight to your known blueprints, instead of putting blueprint items in storage.",Reverse Engineering
 repa_re_base_research_slots,Research slots per hub tier,Int,2,1,50,Items researched in parallel per type equals this value times the hub tier divided by the item slot size. 2 gives 6 weapon slots at tier 3.,Reverse Engineering
 repa_re_size_weapon,Slot size - weapon,Int,1,1,20,Slots one weapon takes up. Higher means fewer weapons researched at once.,Reverse Engineering
 repa_re_size_fighter,Slot size - fighter wing,Int,2,1,20,Slots one fighter wing takes up. Higher means fewer fighters researched at once.,Reverse Engineering

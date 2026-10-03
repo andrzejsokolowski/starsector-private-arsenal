@@ -2,6 +2,13 @@
 
 All notable changes to Reverse Engineered Private Arsenal are documented here.
 
+## 1.3.0
+
+### Added
+- New setting "Add blueprints directly to known blueprints", off by default. When on, an
+  improved hub adds each reverse-engineered item straight to your known blueprints instead
+  of putting blueprint items in storage.
+
 ## 1.2.4
 
 ### Changed

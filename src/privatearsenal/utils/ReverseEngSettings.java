@@ -111,6 +111,14 @@ public class ReverseEngSettings {
         return getInt("repa_re_improve_blueprint_copies", 1);
     }
 
+    /**
+     * When on, an improved hub adds each finished item to the player's known blueprints
+     * instead of putting blueprint items in storage. Off by default.
+     */
+    public static boolean learnBlueprintsDirectly() {
+        return getBoolean("repa_re_learn_blueprints", false);
+    }
+
     // --- Parallel research slots (per item type, scaled by hub tier and item size) ---
 
     /** Slot budget per hub tier. Items researched in parallel per type = this * tier / itemSize. */

@@ -37,7 +37,9 @@ import privatearsenal.utils.SaveOneData;
  *
  * Every finished item is registered in the produced-set so the integrated
  * Private Arsenal can stock it. The actual blueprint is only produced when the
- * hub is improved (the story-point improvement "also produces a blueprint").
+ * hub is improved (the story-point improvement "also produces a blueprint"): as
+ * blueprint items in storage, or, with the "learn blueprints directly" setting,
+ * straight into the player's known blueprints.
  * Items already in the produced-set are never re-scanned. AI cores only shorten
  * the time.
  */
@@ -166,6 +168,12 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
         return true;
     }
 
+    /**
+     * Adds this item to the player's known blueprints, the same way right-clicking
+     * its blueprint item does. Returns false when the player already knew it.
+     */
+    protected abstract boolean learnBlueprint(FactionAPI player, String id);
+
     // --- Daily loop --------------------------------------------------------
 
     protected void onNewDay() {
@@ -223,20 +231,31 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
         debugLog("Reverse engineering of " + batch.size() + " " + typeReverse + "(s) completed.");
 
         boolean improved = isImproved();
-        int copies = improved ? Math.max(1, ReverseEngSettings.improveBlueprintCopies()) : 0;
+        boolean learn = improved && ReverseEngSettings.learnBlueprintsDirectly();
+        int copies = improved && !learn ? Math.max(1, ReverseEngSettings.improveBlueprintCopies()) : 0;
         int blueprintsMade = 0;
         int blueprintsFailed = 0;
         int blueprintsSkipped = 0;
+        int blueprintsLearned = 0;
+        int blueprintsKnown = 0;
+        FactionAPI player = Global.getSector().getPlayerFaction();
 
         for (T item : batch) {
             String id = getId(item);
             // Every finished item is unlocked in the integrated Private Arsenal.
             registerProduced(id);
-            // The story-point improvement additionally produces the actual blueprint in storage.
+            // The story-point improvement additionally produces the actual blueprint,
+            // in storage or straight into the known blueprints.
             if (improved) {
                 // Items the game forbids as blueprints (no_bp_drop) stay Arsenal-only.
                 if (!isBlueprintable(item)) {
                     blueprintsSkipped++;
+                } else if (learn) {
+                    if (learnBlueprint(player, id)) {
+                        blueprintsLearned++;
+                    } else {
+                        blueprintsKnown++;
+                    }
                 } else if (generateBlueprint(id, copies)) {
                     blueprintsMade++;
                 } else {
@@ -245,7 +264,8 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
             }
         }
 
-        notifyBatchCompletion(batch, copies, blueprintsMade, blueprintsFailed, blueprintsSkipped);
+        notifyBatchCompletion(batch, copies, blueprintsMade, blueprintsFailed, blueprintsSkipped,
+                blueprintsLearned, blueprintsKnown);
 
         currentBatch = new ArrayList<T>();
         daysPassed = 0;
@@ -268,7 +288,8 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
                 market.getFaction().getBrightUIColor());
     }
 
-    protected void notifyBatchCompletion(List<T> batch, int copies, int made, int failed, int skipped) {
+    protected void notifyBatchCompletion(List<T> batch, int copies, int made, int failed, int skipped,
+            int learned, int known) {
         int n = batch.size();
         String countLabel = n + " " + pluralize(typeReverse, n);
         String names = joinNames(batch, 12);
@@ -290,6 +311,16 @@ public abstract class AbstractReverseEngineeringIndustry<T> extends AbstractSubm
             intel.addLine(BaseIntelPlugin.BULLET + "Blueprints added to storage for %s (x%s each).",
                     Misc.getHighlightColor(),
                     new String[] { made + " " + pluralize("item", made), "" + copies });
+        }
+        if (learned > 0) {
+            intel.addLine(BaseIntelPlugin.BULLET + "Blueprints learned for %s.",
+                    Misc.getHighlightColor(),
+                    new String[] { learned + " " + pluralize("item", learned) });
+        }
+        if (known > 0) {
+            intel.addLine(BaseIntelPlugin.BULLET + "%s blueprint(s) were already known.",
+                    Misc.getGrayColor(),
+                    new String[] { "" + known });
         }
         if (failed > 0) {
             intel.addLine(BaseIntelPlugin.BULLET + "No storage space for %s blueprint(s).",

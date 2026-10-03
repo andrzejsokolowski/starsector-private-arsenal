@@ -35,3 +35,25 @@ jar {
         attributes('Main-Class': 'privatearsenal.PrivateArsenalModPlugin')
     }
 }
+
+// Only what the game loads. Development helpers such as utils/ stay out of the release.
+def releaseFiles = copySpec {
+    from(projectDir) {
+        include 'mod_info.json', 're_private_arsenal.version'
+        include 'data/**', 'graphics/**', 'jars/PrivateArsenal.jar'
+    }
+}
+
+// The mod manager installs the folder inside the ZIP as-is.
+tasks.register('stageRelease', Sync) {
+    dependsOn tasks.named('jar')
+    with releaseFiles
+    into layout.projectDirectory.dir('ReverseEngineeredPrivateArsenal')
+}
+
+tasks.register('releaseZip', Zip) {
+    dependsOn tasks.named('stageRelease')
+    destinationDirectory = layout.projectDirectory
+    archiveFileName = 'PrivateArsenal.zip'
+    into('ReverseEngineeredPrivateArsenal') { with releaseFiles }
+}
