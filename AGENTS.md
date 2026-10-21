@@ -38,7 +38,7 @@ small quota that runs out. The workspace `AGENTS.md` has the full routine.
 ## Update metadata
 
 Keep `mod_info.json`, `re_private_arsenal.version` and `data/config/version/version_files.csv`
-consistent. No forum topic yet.
+consistent. Forum topic 35627.
 
 - masterVersionFile:
   `https://raw.githubusercontent.com/andrzejsokolowski/starsector-private-arsenal/main/re_private_arsenal.version`

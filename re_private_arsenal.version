@@ -1,11 +1,12 @@
 {
     "masterVersionFile":"https://raw.githubusercontent.com/andrzejsokolowski/starsector-private-arsenal/main/re_private_arsenal.version",
     "modName":"Reverse Engineered Private Arsenal",
+    "modThreadId":35627,
     "modVersion":
     {
         "major":1,
         "minor":3,
-        "patch":0
+        "patch":1
     },
 	"starsectorVersion":"0.98a-RC8",
 	"directDownloadURL":"https://github.com/andrzejsokolowski/starsector-private-arsenal/releases/latest/download/PrivateArsenal.zip"

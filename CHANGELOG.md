@@ -2,6 +2,12 @@
 
 All notable changes to Reverse Engineered Private Arsenal are documented here.
 
+## 1.3.1
+
+### Changed
+- The mod now links to its forum thread (topic 35627), so version checkers can point
+  you to it.
+
 ## 1.3.0
 
 ### Added
