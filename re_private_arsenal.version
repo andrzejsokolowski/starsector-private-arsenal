@@ -1,5 +1,6 @@
 {
     "masterVersionFile":"https://raw.githubusercontent.com/andrzejsokolowski/starsector-private-arsenal/main/re_private_arsenal.version",
+    "changelogURL":"https://raw.githubusercontent.com/andrzejsokolowski/starsector-private-arsenal/main/changelog.txt",
     "modName":"Reverse Engineered Private Arsenal",
     "modThreadId":35627,
     "modVersion":

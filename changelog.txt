@@ -1,0 +1,23 @@
+Version 1.3.1 (2026-10-21)
+- The mod now links to its forum thread, so version checkers can point you to it.
+
+Version 1.3.0 (2026-10-03)
+- New setting "Add blueprints directly to known blueprints", off by default. When on, an improved hub adds each reverse-engineered item straight to your known blueprints instead of putting blueprint items in storage.
+
+Version 1.2.4 (2026-06-23)
+- Bug fixes.
+
+Version 1.2.2
+- Fixed d-modded and pristine ships being mixed up.
+
+Version 1.2.1
+- Fixed ships tagged no_bp creating a blueprint, which added a Nebula blueprint.
+
+Version 1.2.0
+- Ships without an improvement no longer give a blueprint. LunaLib toggle to stock or not stock ships in the Private Arsenal by the same rules.
+
+Version 1.1.1
+- Fixed a save-corruption crash where the Private Arsenal's ships were stored with an invalid faction (worst after demolishing the hub). Demolishing the hub now fully removes its submarkets.
+
+Version 1.1.0
+- The Reverse Engineering Hub researches several items of each type at once instead of one at a time, scaling with hub tier and item size (by default 6 weapons, 3 fighters and 2 ships at tier 3). Slot counts and sizes are LunaLib settings, and notifications come as one message per type.
