@@ -1,3 +1,8 @@
+Version 1.4.0 (2026-11-10)
+- New setting "Private Arsenal stocks known weapon blueprints as well?", off by default. When on, the Private Arsenal also sells every weapon you know the blueprint for, not only the ones your hub reverse-engineered.
+- New setting "Private Arsenal stocks known fighter blueprints as well?", off by default. Same for fighter wings, from a Tier 2 hub.
+- New setting "Private Arsenal stocks known ship blueprints as well?", off by default. Same for ships, from a Tier 3 hub, bought in the fleet screen. Works on its own, without the setting that sells reverse-engineered ships.
+
 Version 1.3.2 (2026-11-10)
 - New gold icon in mod managers (TriOS) and in LunaLib's settings.
 

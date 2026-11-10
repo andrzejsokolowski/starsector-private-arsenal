@@ -189,4 +189,21 @@ public class ReverseEngSettings {
     public static boolean sellShipsInFleet() {
         return getBoolean("repa_re_sell_ships_in_fleet", false);
     }
+
+    // --- Stock the player's known blueprints too (the old Dark QOL behaviour), off by default ---
+
+    /** The Private Arsenal also sells every weapon the player knows the blueprint for. */
+    public static boolean stockKnownWeapons() {
+        return getBoolean("repa_re_stock_known_weapons", false);
+    }
+
+    /** A Tier 2+ hub's Private Arsenal also sells every fighter wing the player knows. */
+    public static boolean stockKnownFighters() {
+        return getBoolean("repa_re_stock_known_fighters", false);
+    }
+
+    /** A Tier 3 hub's Private Arsenal also sells every ship hull the player knows (fleet screen). */
+    public static boolean stockKnownShips() {
+        return getBoolean("repa_re_stock_known_ships", false);
+    }
 }

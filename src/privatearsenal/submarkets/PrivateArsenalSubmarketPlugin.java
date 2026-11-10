@@ -2,14 +2,18 @@ package privatearsenal.submarkets;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.combat.ShipHullSpecAPI;
+import com.fs.starfarer.api.combat.ShipHullSpecAPI.ShipTypeHints;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
+import com.fs.starfarer.api.combat.WeaponAPI.WeaponType;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
@@ -26,8 +30,8 @@ import privatearsenal.utils.ReverseEngSettings;
  * The Private Arsenal is now an output of the Reverse Engineering Hub: it only
  * stocks weapons, fighter wings and ships the hub has actually reverse-engineered
  * here, gated by the hub's current tier (T1 weapons, T2+ also fighters, T3+ also
- * ships). Items merely unlocked elsewhere (a blueprint found in the world) do not
- * appear.
+ * ships). Items merely unlocked elsewhere (a blueprint found in the world) only
+ * appear when the matching "stocks known blueprints" LunaLib setting is on.
  */
 public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
 
@@ -59,7 +63,7 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
             addProducedFighters(); // tier 2+
         }
         // Ships are only stocked (and sold in the fleet screen) when the player opts in via LunaSettings.
-        if (tier >= 3 && ReverseEngSettings.sellShipsInFleet()) {
+        if (tier >= 3 && sellsAnyShips()) {
             addProducedShips(); // tier 3+
         }
         getCargo().sort();
@@ -111,13 +115,47 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
         return hub != null ? hub.getAICoreId() : null;
     }
 
+    /** Either ship setting puts ships in the arsenal (reverse-engineered ones, known ones, or both). */
+    private static boolean sellsAnyShips() {
+        return ReverseEngSettings.sellShipsInFleet() || ReverseEngSettings.stockKnownShips();
+    }
+
+    private static FactionAPI playerFaction() {
+        return Global.getSector() != null ? Global.getSector().getPlayerFaction() : null;
+    }
+
+    /** Weapon types that are not real mountable weapons and must never be sold. */
+    private static boolean isSellableWeapon(WeaponSpecAPI spec) {
+        WeaponType type = spec.getType();
+        return type != WeaponType.DECORATIVE
+                && type != WeaponType.BUILT_IN
+                && type != WeaponType.SYSTEM
+                && type != WeaponType.LAUNCH_BAY
+                && type != WeaponType.STATION_MODULE;
+    }
+
+    /** Hulls that cannot be bought as a ship on their own (stations, station and ship modules). */
+    private static boolean isSellableHull(String hullId) {
+        ShipHullSpecAPI hull = Global.getSettings().getHullSpec(hullId);
+        if (hull == null) {
+            return false;
+        }
+        return !hull.getHints().contains(ShipTypeHints.STATION)
+                && !hull.getHints().contains(ShipTypeHints.MODULE);
+    }
+
     private void addProducedWeapons() {
-        List<String> ids = new ArrayList<String>(
-                AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_WEAPONS_MEMORY));
+        Set<String> produced = AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_WEAPONS_MEMORY);
+        Set<String> idSet = new LinkedHashSet<String>(produced);
+        if (ReverseEngSettings.stockKnownWeapons() && playerFaction() != null) {
+            idSet.addAll(playerFaction().getKnownWeapons());
+        }
+        List<String> ids = new ArrayList<String>(idSet);
         for (String weaponId : ids) {
             try {
                 WeaponSpecAPI spec = Global.getSettings().getWeaponSpec(weaponId);
-                if (spec != null) {
+                // Known-only weapons are filtered; reverse-engineered ones are sold as before.
+                if (spec != null && (produced.contains(weaponId) || isSellableWeapon(spec))) {
                     getCargo().addWeapons(weaponId, 50);
                 }
             } catch (Throwable t) {
@@ -127,8 +165,12 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     }
 
     private void addProducedFighters() {
-        List<String> ids = new ArrayList<String>(
+        Set<String> idSet = new LinkedHashSet<String>(
                 AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_FIGHTERS_MEMORY));
+        if (ReverseEngSettings.stockKnownFighters() && playerFaction() != null) {
+            idSet.addAll(playerFaction().getKnownFighters());
+        }
+        List<String> ids = new ArrayList<String>(idSet);
         for (String fighterId : ids) {
             try {
                 FighterWingSpecAPI spec = Global.getSettings().getFighterWingSpec(fighterId);
@@ -142,7 +184,23 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     }
 
     private void addProducedShips() {
-        Set<String> produced = AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_SHIPS_MEMORY);
+        // Hulls on offer: the reverse-engineered ones (setting "sell reverse-engineered ships") and,
+        // with "stocks known ship blueprints", every hull the player knows.
+        Set<String> produced = new LinkedHashSet<String>();
+        if (ReverseEngSettings.sellShipsInFleet()) {
+            produced.addAll(AbstractReverseEngineeringIndustry.getProducedSet(Ids.PRODUCED_SHIPS_MEMORY));
+        }
+        if (ReverseEngSettings.stockKnownShips() && playerFaction() != null) {
+            for (String hullId : playerFaction().getKnownShips()) {
+                try {
+                    if (isSellableHull(hullId)) {
+                        produced.add(hullId);
+                    }
+                } catch (Throwable t) {
+                    // stale / removed hull id -> skip
+                }
+            }
+        }
 
         // The mothballed-ship stockpile survives refreshMarketStock's clear() (unlike weapon and
         // fighter stacks, which are re-added fresh each time). So keep exactly one copy of each
@@ -231,9 +289,29 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
         tooltip.addPara(
                 "Stocks every weapon and fighter wing your Reverse Engineering Hub has reverse-engineered. Prices scale with the AI core assigned to the hub (an Omega core makes everything free). Selling items is not allowed.",
                 10f);
-        if (ReverseEngSettings.sellShipsInFleet()) {
+        List<String> known = new ArrayList<String>();
+        if (ReverseEngSettings.stockKnownWeapons()) {
+            known.add("weapons");
+        }
+        if (ReverseEngSettings.stockKnownFighters()) {
+            known.add("fighter wings");
+        }
+        if (ReverseEngSettings.stockKnownShips()) {
+            known.add("ships");
+        }
+        if (!known.isEmpty()) {
+            StringBuilder list = new StringBuilder();
+            for (int i = 0; i < known.size(); i++) {
+                if (i > 0) {
+                    list.append(i == known.size() - 1 ? " and " : ", ");
+                }
+                list.append(known.get(i));
+            }
+            tooltip.addPara("Also stocks the " + list + " you know the blueprints for.", 10f);
+        }
+        if (sellsAnyShips()) {
             tooltip.addPara(
-                    "Reverse-engineered ships are also stocked here and can be bought directly in the fleet screen.",
+                    "At Tier 3, ships are stocked here too and can be bought directly in the fleet screen.",
                     10f);
         }
     }
@@ -254,6 +332,6 @@ public class PrivateArsenalSubmarketPlugin extends BaseArsenalSubmarketPlugin {
     @Override
     public boolean showInFleetScreen() {
         // Only surface the ship-buying tab when the player has enabled selling ships and the hub is Tier 3.
-        return ReverseEngSettings.sellShipsInFleet() && getHubTier() >= 3;
+        return sellsAnyShips() && getHubTier() >= 3;
     }
 }
