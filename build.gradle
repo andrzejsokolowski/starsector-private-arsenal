@@ -16,9 +16,10 @@ sourceSets {
 
 dependencies {
     // Starsector API, its bundled libs, and LunaLib are all provided at runtime by
-    // the game/other mods, so they are compile-only. Vendored in lib/ alongside the
-    // other Starsector jars (also referenced by pom.xml).
-    compileOnly fileTree(dir: 'lib', include: ['*.jar'])
+    // the game/other mods, so they are compile-only. Taken from the game folder named by
+    // starsectorPath in gradle.properties.
+    compileOnly fileTree(dir: "${starsectorPath}/starsector-core", include: ['starfarer.api.jar', 'json.jar', 'log4j-1.2.9.jar', 'lwjgl.jar', 'lwjgl_util.jar', 'xstream-1.4.10.jar'])
+    compileOnly fileTree(dir: "${starsectorPath}/mods", include: ['**/LunaLib.jar', '**/lw_Console.jar'])
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -27,7 +27,7 @@ small quota that runs out. The workspace `AGENTS.md` has the full routine.
 
 - id `re_private_arsenal`, package `privatearsenal`, ID prefix `RePA_`, LunaLib field ids
   `repa_re_*`. Java 8 bytecode, LunaLib at runtime.
-- Build: `gradle jar` with `C:\Programming\Languages\Java\gradle-9.4.1\bin\gradle.bat` (no
+- Build: `gradle jar` (compiles against the game folder in `gradle.properties` starsectorPath) with `C:\Programming\Languages\Java\gradle-9.4.1\bin\gradle.bat` (no
   wrapper). Compile jars are vendored in `lib/`. Package: `gradle releaseZip` stages
   `ReverseEngineeredPrivateArsenal/` and writes `PrivateArsenal.zip` (runtime files only, `utils/`
   stays out).

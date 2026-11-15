@@ -2,11 +2,11 @@
   "id": "re_private_arsenal",
   "name": "Reverse Engineered Private Arsenal",
   "author": "Oddisz",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "modThreadId": "35627",
   "updateCheckURL": "https://raw.githubusercontent.com/andrzejsokolowski/starsector-private-arsenal/main/re_private_arsenal.version",
   "description": "Adds a new industry where you can deconstruct your weapons, fighters and ships (upgradeable) for a copy of their blueprint and a place in a new market where you can buy 50 copies of scanned items.",
-  "gameVersion": "0.98a-RC8",
+  "gameVersion": "0.98.5a-RC4",
   "jars": ["jars/PrivateArsenal.jar"],
   "modPlugin": "privatearsenal.PrivateArsenalModPlugin",
   "dependencies": [

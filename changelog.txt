@@ -1,3 +1,6 @@
+Version 1.5.0 (2026-11-15)
+- Updated for Starsector 0.98.5a.
+
 Version 1.4.0 (2026-11-10)
 - New setting "Private Arsenal stocks known weapon blueprints as well?", off by default. When on, the Private Arsenal also sells every weapon you know the blueprint for, not only the ones your hub reverse-engineered.
 - New setting "Private Arsenal stocks known fighter blueprints as well?", off by default. Same for fighter wings, from a Tier 2 hub.
